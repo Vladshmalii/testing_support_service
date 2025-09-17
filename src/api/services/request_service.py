@@ -1,12 +1,11 @@
-from typing import Optional, List, Tuple
+from typing import Optional
 from fastapi import HTTPException, status
 from tortoise.queryset import QuerySet
-from tortoise.expressions import Q
 from datetime import datetime
 
-from ...enums import UserRole, RequestStatus
-from ...models.models import Request, User
-from ..schemas.schemas import (
+from src.enums import UserRole, RequestStatus
+from src.models.models import Request, User
+from src.api.schemas.schemas import (
     RequestCreate, RequestUpdate, RequestResponse, RequestListResponse,
     RequestStatusUpdate, PaginatedResponse, RequestFilters,
     PaginationParams, StaffAssignment
@@ -78,8 +77,7 @@ class RequestService:
     @staticmethod
     async def get_request_by_id(request_id: int, user_id: int, user_role: UserRole) -> RequestResponse:
         if user_role == UserRole.USER:
-            request = await Request.get_or_none(id=request_id, owner_id=user_id).prefetch_related("owner",
-                                                                                                  "staff_member")
+            request = await Request.get_or_none(id=request_id, owner_id=user_id).prefetch_related("owner", "staff_member")
         else:
             request = await Request.get_or_none(id=request_id).prefetch_related("owner", "staff_member")
 
@@ -92,11 +90,7 @@ class RequestService:
         return await RequestService._build_request_response(request)
 
     @staticmethod
-    async def update_request(
-            request_id: int,
-            user_id: int,
-            data: RequestUpdate
-    ) -> RequestResponse:
+    async def update_request(request_id: int, user_id: int, data: RequestUpdate) -> RequestResponse:
         request = await Request.get_or_none(id=request_id, owner_id=user_id).prefetch_related("owner")
 
         if not request:
@@ -120,11 +114,7 @@ class RequestService:
         return await RequestService._build_request_response(request)
 
     @staticmethod
-    async def update_request_status(
-            request_id: int,
-            staff_id: int,
-            data: RequestStatusUpdate
-    ) -> RequestResponse:
+    async def update_request_status(request_id: int, staff_id: int, data: RequestStatusUpdate) -> RequestResponse:
         request = await Request.get_or_none(id=request_id).prefetch_related("owner", "staff_member")
 
         if not request:
@@ -144,11 +134,7 @@ class RequestService:
         return await RequestService._build_request_response(request)
 
     @staticmethod
-    async def assign_staff_to_request(
-            request_id: int,
-            assignment: StaffAssignment,
-            admin_id: int
-    ) -> RequestResponse:
+    async def assign_staff_to_request(request_id: int, assignment: StaffAssignment, admin_id: int) -> RequestResponse:
         request = await Request.get_or_none(id=request_id).prefetch_related("owner")
 
         if not request:

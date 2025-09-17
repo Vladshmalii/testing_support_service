@@ -5,10 +5,10 @@ from typing import Optional
 from fastapi import HTTPException, status
 from fastapi.responses import StreamingResponse
 
-from ...models.models import Request, User
-from ..schemas.schemas import RequestFilters
-from ..services.request_service import RequestService
-from ...enums import UserRole
+from src.models.models import Request, User
+from src.api.schemas.schemas import RequestFilters
+from src.api.services.request_service import RequestService
+from src.enums import UserRole
 
 
 class CSVService:
@@ -24,24 +24,15 @@ class CSVService:
 
         query = Request.all()
         query = RequestService._apply_filters(query, filters)
-
         requests = await query.prefetch_related("owner", "staff_member")
 
         output = StringIO()
         writer = csv.writer(output)
 
         writer.writerow([
-            "ID",
-            "Request Text",
-            "Status",
-            "Created At",
-            "Updated At",
-            "Owner Email",
-            "Owner Name",
-            "Owner INN",
-            "Owner Phone",
-            "Staff Email",
-            "Staff Comment"
+            "ID", "Request Text", "Status", "Created At", "Updated At",
+            "Owner Email", "Owner Name", "Owner INN", "Owner Phone",
+            "Staff Email", "Staff Comment"
         ])
 
         for request in requests:
@@ -65,7 +56,6 @@ class CSVService:
             ])
 
         output.seek(0)
-
         filename = f"requests_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
 
         return StreamingResponse(

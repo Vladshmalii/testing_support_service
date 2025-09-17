@@ -1,5 +1,5 @@
 import bcrypt
-from typing import Union
+from typing import Tuple, List
 
 
 class PasswordManager:
@@ -13,15 +13,12 @@ class PasswordManager:
     @staticmethod
     def verify_password(password: str, hashed_password: str) -> bool:
         try:
-            return bcrypt.checkpw(
-                password.encode('utf-8'),
-                hashed_password.encode('utf-8')
-            )
+            return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
         except (ValueError, TypeError):
             return False
 
     @staticmethod
-    def is_password_strong(password: str) -> tuple[bool, list[str]]:
+    def is_password_strong(password: str) -> Tuple[bool, List[str]]:
         errors = []
 
         if len(password) < 8:

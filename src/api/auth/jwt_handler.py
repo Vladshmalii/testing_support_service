@@ -1,23 +1,19 @@
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 from fastapi import HTTPException, status
+import jwt
 
 from src.enums import UserRole
 from src.core.config import settings
 
-import jwt
 
 class JWTHandler:
 
     @staticmethod
-    def create_access_token(
-            data: Dict[str, Any],
-            expires_delta: Optional[timedelta] = None
-    ) -> str:
+    def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
         to_encode = data.copy()
-        expire = datetime.utcnow() + (
-                expires_delta or timedelta(minutes=settings.access_token_expire_minutes)
-        )
+        expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.access_token_expire_minutes))
+
         to_encode.update({
             "exp": expire,
             "iat": datetime.utcnow(),
@@ -27,14 +23,10 @@ class JWTHandler:
         return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
 
     @staticmethod
-    def create_refresh_token(
-            data: Dict[str, Any],
-            expires_delta: Optional[timedelta] = None
-    ) -> str:
+    def create_refresh_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
         to_encode = data.copy()
-        expire = datetime.utcnow() + (
-                expires_delta or timedelta(days=7)
-        )
+        expire = datetime.utcnow() + (expires_delta or timedelta(days=7))
+
         to_encode.update({
             "exp": expire,
             "iat": datetime.utcnow(),
@@ -46,8 +38,7 @@ class JWTHandler:
     @staticmethod
     def decode_token(token: str) -> Dict[str, Any]:
         try:
-            payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-            return payload
+            return jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         except jwt.ExpiredSignatureError:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -60,12 +51,7 @@ class JWTHandler:
             )
 
     @staticmethod
-    def create_user_token(
-            user_id: int,
-            email: str,
-            role: UserRole,
-            permissions: Optional[List[str]] = None
-    ) -> str:
+    def create_user_token(user_id: int, email: str, role: UserRole, permissions: Optional[List[str]] = None) -> str:
         payload = {
             "user_id": user_id,
             "email": email,
@@ -76,12 +62,8 @@ class JWTHandler:
         return JWTHandler.create_access_token(payload)
 
     @staticmethod
-    def create_token_pair(
-            user_id: int,
-            email: str,
-            role: UserRole,
-            permissions: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+    def create_token_pair(user_id: int, email: str, role: UserRole, permissions: Optional[List[str]] = None) -> Dict[
+        str, Any]:
         base_payload = {
             "user_id": user_id,
             "email": email,
@@ -141,10 +123,7 @@ class JWTHandler:
         return payload
 
     @staticmethod
-    def verify_token_permissions(
-            token: str,
-            required_permissions: List[str]
-    ) -> Dict[str, Any]:
+    def verify_token_permissions(token: str, required_permissions: List[str]) -> Dict[str, Any]:
         payload = JWTHandler.get_token_payload(token)
         token_permissions = set(payload.get("permissions", []))
         required_permissions_set = set(required_permissions)

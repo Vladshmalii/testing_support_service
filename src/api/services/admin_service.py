@@ -3,9 +3,9 @@ from fastapi import HTTPException, status
 from tortoise.functions import Count
 from tortoise.expressions import Q
 
-from ...models.models import User, Request
-from ..schemas.schemas import StatsResponse, UserResponse, StaffResponse, PaginationParams
-from ...enums import RequestStatus, UserRole
+from src.models.models import User, Request
+from src.api.schemas.schemas import StatsResponse, UserResponse, StaffResponse, PaginationParams
+from src.enums import RequestStatus, UserRole
 
 
 class AdminService:
@@ -110,7 +110,6 @@ class AdminService:
             )
 
         await user.delete()
-
         return {"message": "User deleted successfully"}
 
     @staticmethod
@@ -134,7 +133,6 @@ class AdminService:
             await Request.filter(staff_member_id=staff_id).update(staff_member_id=None)
 
         await staff.delete()
-
         return {"message": "Staff member deleted successfully"}
 
     @staticmethod

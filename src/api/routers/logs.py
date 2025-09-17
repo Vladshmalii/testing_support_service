@@ -6,16 +6,13 @@ from src.middleware.permissions import PermissionsValidator, Permissions
 from src.core.database import DatabaseManager
 from src.core.dependencies import get_database_manager
 from src.middleware.auth_middleware import require_admin
-from src.models.models import User
 
 router = APIRouter()
 
 
 @router.get(
     "/api-logs",
-    dependencies=[
-        Depends(PermissionsValidator([Permissions.VIEW_LOGS]))
-    ]
+    dependencies=[Depends(PermissionsValidator([Permissions.VIEW_LOGS]))]
 )
 async def get_api_logs(
     current_user: Dict[str, Any] = Depends(require_admin),
@@ -28,7 +25,6 @@ async def get_api_logs(
     hours_ago: int = Query(24, ge=1, le=168)
 ):
     since = datetime.utcnow() - timedelta(hours=hours_ago)
-
     filters = {"timestamp": {"$gte": since}}
 
     if method:
@@ -38,21 +34,17 @@ async def get_api_logs(
     if user_id:
         filters["user_info.user_id"] = user_id
 
-    logs = await db.get_mongo_logs(
+    return await db.get_mongo_logs(
         collection="app_logs",
         filters=filters,
         page=page,
         size=size
     )
 
-    return logs
-
 
 @router.get(
     "/request-actions",
-    dependencies=[
-        Depends(PermissionsValidator([Permissions.VIEW_LOGS]))
-    ]
+    dependencies=[Depends(PermissionsValidator([Permissions.VIEW_LOGS]))]
 )
 async def get_request_action_logs(
     current_user: Dict[str, Any] = Depends(require_admin),
@@ -65,7 +57,6 @@ async def get_request_action_logs(
     hours_ago: int = Query(24, ge=1, le=168)
 ):
     since = datetime.utcnow() - timedelta(hours=hours_ago)
-
     filters = {"timestamp": {"$gte": since}}
 
     if request_id:
@@ -75,21 +66,17 @@ async def get_request_action_logs(
     if action:
         filters["action"] = action
 
-    logs = await db.get_mongo_logs(
+    return await db.get_mongo_logs(
         collection="request_actions",
         filters=filters,
         page=page,
         size=size
     )
 
-    return logs
-
 
 @router.get(
     "/stats",
-    dependencies=[
-        Depends(PermissionsValidator([Permissions.VIEW_LOGS, Permissions.VIEW_STATISTICS]))
-    ]
+    dependencies=[Depends(PermissionsValidator([Permissions.VIEW_LOGS, Permissions.VIEW_STATISTICS]))]
 )
 async def get_logging_stats(
     current_user: Dict[str, Any] = Depends(require_admin),
