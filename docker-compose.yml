@@ -1,0 +1,60 @@
+version: '3.10'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: support_postgres
+    environment:
+      POSTGRES_DB: support_system
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - support_network
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:7
+    container_name: support_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - support_network
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: support_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/support_system
+      - MONGODB_URL=mongodb://mongodb:27017
+      - MONGODB_DATABASE=app_logs
+      - SECRET_KEY=a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6
+      - DEBUG=True
+      - PYTHONPATH=/app
+      - ENVIRONMENT=development
+    depends_on:
+      - postgres
+      - mongodb
+    volumes:
+      - .:/app
+    networks:
+      - support_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  mongodb_data:
+
+networks:
+  support_network:
+    driver: bridge

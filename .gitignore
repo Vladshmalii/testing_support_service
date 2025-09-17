@@ -1,0 +1,15 @@
+.venv
+.idea
+.env
+db.sqlite3
+__pycache__/
+*.pyc
+*.pyo
+build/
+dist/
+*.egg-info/
+*.log
+.vscode/
+*.sublime-workspace
+*.sublime-project
+celerybeat-schedule*
