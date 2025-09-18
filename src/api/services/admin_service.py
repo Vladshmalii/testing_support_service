@@ -11,14 +11,7 @@ from src.enums import RequestStatus, UserRole
 class AdminService:
 
     @staticmethod
-    async def get_statistics(admin_id: int) -> StatsResponse:
-        admin = await User.filter(id=admin_id, role=UserRole.ADMIN).first()
-        if not admin:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Admin not found"
-            )
-
+    async def get_statistics() -> StatsResponse:
         total_requests = await Request.all().count()
         new_requests = await Request.filter(status=RequestStatus.NEW).count()
         in_progress_requests = await Request.filter(status=RequestStatus.IN_PROGRESS).count()
@@ -39,14 +32,7 @@ class AdminService:
         )
 
     @staticmethod
-    async def get_all_users(admin_id: int, pagination: PaginationParams) -> dict:
-        admin = await User.filter(id=admin_id, role=UserRole.ADMIN).first()
-        if not admin:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Admin not found"
-            )
-
+    async def get_all_users(pagination: PaginationParams) -> dict:
         total = await User.filter(role=UserRole.USER).count()
         users = await User.filter(role=UserRole.USER).offset(
             (pagination.page - 1) * pagination.size
@@ -63,14 +49,7 @@ class AdminService:
         }
 
     @staticmethod
-    async def get_all_staff(admin_id: int, pagination: PaginationParams) -> dict:
-        admin = await User.filter(id=admin_id, role=UserRole.ADMIN).first()
-        if not admin:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Admin not found"
-            )
-
+    async def get_all_staff(pagination: PaginationParams) -> dict:
         total = await User.filter(role=UserRole.STAFF).count()
         staff_members = await User.filter(role=UserRole.STAFF).offset(
             (pagination.page - 1) * pagination.size
@@ -87,14 +66,7 @@ class AdminService:
         }
 
     @staticmethod
-    async def delete_user(admin_id: int, user_id: int) -> dict:
-        admin = await User.filter(id=admin_id, role=UserRole.ADMIN).first()
-        if not admin:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Admin not found"
-            )
-
+    async def delete_user(user_id: int) -> dict:
         user = await User.filter(id=user_id, role=UserRole.USER).first()
         if not user:
             raise HTTPException(
@@ -113,14 +85,7 @@ class AdminService:
         return {"message": "User deleted successfully"}
 
     @staticmethod
-    async def delete_staff(admin_id: int, staff_id: int) -> dict:
-        admin = await User.filter(id=admin_id, role=UserRole.ADMIN).first()
-        if not admin:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Admin not found"
-            )
-
+    async def delete_staff(staff_id: int) -> dict:
         staff = await User.filter(id=staff_id, role=UserRole.STAFF).first()
         if not staff:
             raise HTTPException(
@@ -136,14 +101,7 @@ class AdminService:
         return {"message": "Staff member deleted successfully"}
 
     @staticmethod
-    async def get_staff_workload(admin_id: int) -> List[dict]:
-        admin = await User.filter(id=admin_id, role=UserRole.ADMIN).first()
-        if not admin:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Admin not found"
-            )
-
+    async def get_staff_workload() -> List[dict]:
         staff_workload = await User.filter(role=UserRole.STAFF).annotate(
             total_requests=Count("assigned_requests"),
             new_requests=Count("assigned_requests", _filter=Q(assigned_requests__status=RequestStatus.NEW)),

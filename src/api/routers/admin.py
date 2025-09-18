@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, status
-from typing import Dict, Any
 
 from src.middleware.permissions import PermissionsValidator, Permissions
 from src.api.services.request_service import RequestService
@@ -23,73 +22,81 @@ async def register_admin(admin_data: AdminRegistration):
 @router.get(
     "/statistics",
     response_model=StatsResponse,
-    dependencies=[Depends(PermissionsValidator([Permissions.VIEW_STATISTICS]))]
+    dependencies=[
+        Depends(require_admin),
+        Depends(PermissionsValidator([Permissions.VIEW_STATISTICS]))
+    ]
 )
-async def get_statistics(current_admin: Dict[str, Any] = Depends(require_admin)):
-    return await AdminService.get_statistics(current_admin["user_id"])
+async def get_statistics():
+    return await AdminService.get_statistics()
 
 
 @router.get(
     "/users",
-    dependencies=[Depends(PermissionsValidator([Permissions.VIEW_USERS]))]
+    dependencies=[
+        Depends(require_admin),
+        Depends(PermissionsValidator([Permissions.VIEW_USERS]))
+    ]
 )
-async def get_all_users(
-    pagination: PaginationParams = Depends(),
-    current_admin: Dict[str, Any] = Depends(require_admin)
-):
-    return await AdminService.get_all_users(current_admin["user_id"], pagination)
+async def get_all_users(pagination: PaginationParams = Depends()):
+    return await AdminService.get_all_users(pagination)
 
 
 @router.get(
     "/staff",
-    dependencies=[Depends(PermissionsValidator([Permissions.VIEW_STAFF]))]
+    dependencies=[
+        Depends(require_admin),
+        Depends(PermissionsValidator([Permissions.VIEW_STAFF]))
+    ]
 )
-async def get_all_staff(
-    pagination: PaginationParams = Depends(),
-    current_admin: Dict[str, Any] = Depends(require_admin)
-):
-    return await AdminService.get_all_staff(current_admin["user_id"], pagination)
+async def get_all_staff(pagination: PaginationParams = Depends()):
+    return await AdminService.get_all_staff(pagination)
 
 
 @router.delete(
     "/users/{user_id}",
-    dependencies=[Depends(PermissionsValidator([Permissions.DELETE_USERS]))]
+    dependencies=[
+        Depends(require_admin),
+        Depends(PermissionsValidator([Permissions.DELETE_USERS]))
+    ]
 )
-async def delete_user(
-    user_id: int,
-    current_admin: Dict[str, Any] = Depends(require_admin)
-):
-    return await AdminService.delete_user(current_admin["user_id"], user_id)
+async def delete_user(user_id: int):
+    return await AdminService.delete_user(user_id)
 
 
 @router.delete(
     "/staff/{staff_id}",
-    dependencies=[Depends(PermissionsValidator([Permissions.DELETE_STAFF]))]
+    dependencies=[
+        Depends(require_admin),
+        Depends(PermissionsValidator([Permissions.DELETE_STAFF]))
+    ]
 )
-async def delete_staff(
-    staff_id: int,
-    current_admin: Dict[str, Any] = Depends(require_admin)
-):
-    return await AdminService.delete_staff(current_admin["user_id"], staff_id)
+async def delete_staff(staff_id: int):
+    return await AdminService.delete_staff(staff_id)
 
 
 @router.get(
     "/staff/workload",
-    dependencies=[Depends(PermissionsValidator([Permissions.VIEW_STAFF, Permissions.VIEW_STATISTICS]))]
+    dependencies=[
+        Depends(require_admin),
+        Depends(PermissionsValidator([Permissions.VIEW_STAFF, Permissions.VIEW_STATISTICS]))
+    ]
 )
-async def get_staff_workload(current_admin: Dict[str, Any] = Depends(require_admin)):
-    return await AdminService.get_staff_workload(current_admin["user_id"])
+async def get_staff_workload():
+    return await AdminService.get_staff_workload()
 
 
 @router.get(
     "/requests",
     response_model=PaginatedResponse,
-    dependencies=[Depends(PermissionsValidator([Permissions.VIEW_REQUESTS]))]
+    dependencies=[
+        Depends(require_admin),
+        Depends(PermissionsValidator([Permissions.VIEW_REQUESTS]))
+    ]
 )
 async def get_all_requests(
     pagination: PaginationParams = Depends(),
-    filters: RequestFilters = Depends(),
-    current_admin: Dict[str, Any] = Depends(require_admin)
+    filters: RequestFilters = Depends()
 ):
     return await RequestService.get_all_requests(pagination, filters)
 
@@ -100,6 +107,6 @@ async def get_all_requests(
 )
 async def export_requests_csv(
     filters: RequestFilters = Depends(),
-    current_admin: Dict[str, Any] = Depends(require_admin)
+    current_admin = Depends(require_admin)
 ):
     return await CSVService.export_requests_csv(filters, current_admin["user_id"])
